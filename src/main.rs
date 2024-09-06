@@ -3,7 +3,7 @@ use gui::{InterfaceMessage, GUI};
 mod gui;
 
 fn main() {
-    println!("Hello, world!");
+    eprintln!("Hello, world!");
     let gui = GUI::initialize();
     let recv = gui.get_receiver();
 
@@ -15,5 +15,5 @@ fn main() {
             None => {},
         }//end matching messages received
     }//end looping while gui is up
-    println!("World ending!");
+    eprintln!("World ending!");
 }//end main function
