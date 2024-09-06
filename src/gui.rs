@@ -1,5 +1,7 @@
 use fltk::{app::{self, App, Receiver, Sender}, enums::{Align, FrameType, Shortcut}, frame::Frame, group::{Group, Pack, Scroll, Tile}, menu::{MenuFlag, SysMenuBar}, prelude::{DisplayExt, GroupExt, MenuExt, WidgetBase, WidgetExt}, text::{TextBuffer, TextDisplay}, window::Window};
 
+mod character_box;
+
 /// The width in pixels for the main window
 const WINDOW_WIDTH: i32 = 850;
 /// The height in pixels for the main window
