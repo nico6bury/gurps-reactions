@@ -61,6 +61,10 @@ impl GUI {
 		self.app.wait()
 	}//end wait()
 
+	/// Returns a reference to a receiver, used for the main function to
+	/// get messages from the GUI/User.
+	pub fn get_receiver(&self) -> &Receiver<InterfaceMessage> { &self.msg_receiver }
+
 	/// Something like the init-components of other systems.  
 	/// Sets up all the widgets and stuff for the GUI.
 	pub fn initialize() -> GUI {
