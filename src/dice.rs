@@ -1,8 +1,8 @@
 use rand::Rng;
-
+use serde::{Deserialize, Serialize};
 
 /// This struct represents a single die.
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Serialize, Deserialize)]
 struct Die {
 	/// The result from initialization.
 	pub result: i32,
