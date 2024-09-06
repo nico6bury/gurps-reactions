@@ -1,4 +1,4 @@
-use fltk::{app::{self, App, Receiver, Sender}, enums::{Align, FrameType, Shortcut}, frame::Frame, group::{Group, Scroll, Tile}, menu::{MenuFlag, SysMenuBar}, prelude::{DisplayExt, GroupExt, MenuExt, WidgetExt}, text::{TextBuffer, TextDisplay}, window::Window};
+use fltk::{app::{self, App, Receiver, Sender}, enums::{Align, FrameType, Shortcut}, frame::Frame, group::{Group, Pack, Scroll, Tile}, menu::{MenuFlag, SysMenuBar}, prelude::{DisplayExt, GroupExt, MenuExt, WidgetBase, WidgetExt}, text::{TextBuffer, TextDisplay}, window::Window};
 
 /// The width in pixels for the main window
 const WINDOW_WIDTH: i32 = 850;
@@ -9,6 +9,8 @@ const WINDOW_HEIGHT: i32 = 435;
 const TOP_MENU_HEIGHT: i32 = 35;
 /// The width in pixels for the list of characters. Should be less than WINDOW_WIDTH.
 const CHARACTER_LIST_WIDTH: i32 = 500;
+/// The padding to apply to elements within the character list
+const CHARACTER_LIST_PADDING: i32 = 10;
 /// The FrameType to use for major groups in the main window gui
 const MAIN_GROUP_FRAME: FrameType = FrameType::GtkThinUpBox;
 
@@ -208,6 +210,48 @@ impl GUI {
 			.with_size(CHARACTER_LIST_WIDTH, tiles.height());
 		characters_scroll.set_frame(MAIN_GROUP_FRAME);
 		tiles.add_resizable(&characters_scroll);
+
+		let mut character_pack = Pack::default()
+			.with_pos(characters_scroll.x() + CHARACTER_LIST_PADDING, characters_scroll.y() + CHARACTER_LIST_PADDING)
+			.with_size(characters_scroll.width() - (CHARACTER_LIST_PADDING * 2), 0);
+		character_pack.set_spacing(CHARACTER_LIST_PADDING);
+		character_pack.set_frame(FrameType::EmbossedFrame);
+		characters_scroll.add_resizable(&character_pack);
+		character_pack.resize_callback({
+			move |pack,_,_,_,_| {
+				match pack.parent() {
+					None => {},
+					Some(parent) => {
+						let px = parent.x();
+						let py = parent.y();
+						let pw = parent.w();
+						let ph = parent.h();
+						let ex = px + CHARACTER_LIST_PADDING;
+						let ey = py + CHARACTER_LIST_PADDING;
+						let ew = pw - (2 * CHARACTER_LIST_PADDING);
+						let eh = ph - (2 * CHARACTER_LIST_PADDING);
+						if pack.x() != ex || pack.y() != ey {pack.set_pos(ex,ey);}
+						if pack.w() != ew || pack.h() != eh {pack.set_size(ew,eh);}
+					},
+				}//end matching whether we can access the parent
+			}//end closure
+		});
+
+		let mut ch1 = Frame::default()
+			.with_size(0,50)
+			.with_label("Character 1");
+		ch1.set_frame(FrameType::GtkRoundUpFrame);
+		character_pack.add(&ch1);
+
+		let mut ch2 = Frame::default()
+			.with_size(0,50)
+			.with_label("Character 2");
+		ch2.set_frame(FrameType::GtkRoundUpFrame);
+		character_pack.add(&ch2);
+
+		// TODO: Just add raw boxes of stuff for each character
+		// TODO: Also add a box at the top with summed modifiers for the whole party, maybe with checkboxes and sums for each character
+		// TODO: Also Also think about how to store the list of all current characters. Probably need to keep list of current characters and checks somehow
 
 		main_window.show();
 		GUI {
