@@ -1,4 +1,8 @@
+use character_pack::CharacterPack;
 use fltk::{app::{self, App, Receiver, Sender}, enums::{Align, FrameType, Shortcut}, frame::Frame, group::{Group, Pack, Scroll, Tile}, menu::{MenuFlag, SysMenuBar}, prelude::{DisplayExt, GroupExt, MenuExt, WidgetBase, WidgetExt}, text::{TextBuffer, TextDisplay}, window::Window};
+use gurps_reactions::character::Character;
+
+mod character_pack;
 
 /// The width in pixels for the main window
 const WINDOW_WIDTH: i32 = 850;
@@ -51,6 +55,8 @@ pub struct GUI {
 	ux_rct_frm_sum: Frame,
 	ux_rct_frm_res: Frame,
 	ux_rct_frm_result_txt_box: TextDisplay,
+	ux_char_contain_pack: Pack,
+	ux_char_boxes: Vec<CharacterPack>,
 }//end struct GUI
 
 impl GUI {
@@ -63,7 +69,35 @@ impl GUI {
 
 	/// Returns a reference to a receiver, used for the main function to
 	/// get messages from the GUI/User.
-	pub fn get_receiver(&self) -> &Receiver<InterfaceMessage> { &self.msg_receiver }
+	pub fn get_receiver(&self) -> Receiver<InterfaceMessage> { self.msg_receiver }
+
+	/// Returns a list of characters as defined by the interface.
+	pub fn get_characters(&self) -> Vec<Character> {
+		let mut chars = Vec::new();
+		for char_pack in self.ux_char_boxes.iter() {
+			let char = char_pack.get_character();
+			chars.push(char);
+		}//end getting character from each character pack
+		return chars;
+	}//end get_character()
+
+	/// Updates the display with the provided characters.
+	pub fn set_character_display(&mut self, characters: &Vec<Character>) {
+		// clears any current children from the pack
+		while self.ux_char_contain_pack.children() > 0 { self.ux_char_contain_pack.remove_by_index(0); }
+		self.ux_char_boxes.clear();
+		// add character boxes for each character
+		for character in characters {
+			let mut char_box = character_pack::CharacterPack::new(character);
+			self.ux_char_contain_pack.add(&*char_box);
+			for mod_line in char_box.ux_mod_refs.iter_mut() {
+				mod_line.mod_value.emit(app::channel().0, InterfaceMessage::EditCharacter);
+			}//end adding handlers to each mod_line in char_box
+			self.ux_char_boxes.push(char_box);
+		}//end looping for each character
+		// forces the stupid pack to resize and redraw itself
+		self.ux_char_contain_pack.resize(self.ux_char_contain_pack.x(), self.ux_char_contain_pack.y(), self.ux_char_contain_pack.w(), self.ux_char_contain_pack.h());
+	}//end set_character_display()
 
 	/// Something like the init-components of other systems.  
 	/// Sets up all the widgets and stuff for the GUI.
@@ -271,6 +305,8 @@ impl GUI {
 			ux_rct_frm_sum: rct_frm_sum,
 			ux_rct_frm_res: rct_frm_result,
 			ux_rct_frm_result_txt_box: rct_result_txt_box,
+			ux_char_contain_pack: character_pack,
+			ux_char_boxes: Vec::new(),
 		}//end struct construction
 	}//end initialize()
 }//end impl for GUI
@@ -285,4 +321,6 @@ pub enum InterfaceMessage {
 	SaveCharacterAs,
 	/// Indicates that the user wants to open a character file
 	OpenCharacter,
+	/// Indicates that the user has edited a character
+	EditCharacter,
 }//end enum InterfaceMessage
